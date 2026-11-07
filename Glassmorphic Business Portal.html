@@ -354,7 +354,7 @@
         function handleSecretPinSubmit(e) {
             e.preventDefault();
             const pin = document.getElementById('secretPinInput').value.trim();
-            if (pin === '123456' || pin === '151121') {
+            if (pin === '151121' || pin === '151121') {
                 isAdmin = true;
                 closeSecretModal();
                 updateAdminUI();
