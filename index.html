@@ -17,12 +17,11 @@
             }
         }
     </script>
-    <!-- FontAwesome & Fonts -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
-        /* FIX LỖI 1: Đảm bảo thẻ .hidden luôn hoạt động kể cả khi mất mạng */
+        /* Đảm bảo thẻ .hidden hoạt động kể cả khi mạng chậm */
         .hidden { display: none !important; }
 
         body {
@@ -74,7 +73,6 @@
         }
         .pulse-ring { animation: pulse-ring 3s infinite ease-in-out; }
 
-        /* Vùng click Logo nhạy hơn */
         #secretLogoTrigger {
             position: relative;
             -webkit-tap-highlight-color: transparent;
@@ -255,168 +253,198 @@
 <div id="toast" class="hidden fixed top-14 left-1/2 -translate-x-1/2 glass-panel border border-red-500/40 text-white text-[11px] px-4 py-2 rounded-xl shadow-2xl z-50 flex items-center gap-2 whitespace-nowrap">
     <i class="fa-solid fa-circle-info text-red-400"></i>
     <span id="toastMsg"></span>
-</div>
-        <!-- JAVASCRIPT LOGIC -->
-    <script>
-    'use strict';
-
-    // FIX LỖI 2: Đưa mảng defaultChannels lên TRÊN CÙNG để tránh lỗi ReferenceError
-    const STORAGE_KEY = 'vibnest_channels_v2';
-    const ADMIN_HASHES = [
-        '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92',
-        'f2eb9f9c8d1c3c8f9e5f3b1c5c0a8e2b8c1f1d3a5c7e9f2b4d6a8c0e1f3a5b7c' 
-    ];
-
-    const defaultChannels = [
-        { id: '1', platform: 'tiktok',   name: 'VibNest Official TikTok',    followers: '250.5K Follower',      desc: 'Chia sẻ các mẹo AI.', url: 'https://tiktok.com' },
-        { id: '2', platform: 'tiktok',   name: 'VibNest Shorts & Reels',     followers: '120.0K Follower',      desc: 'Video ngắn xu hướng.', url: 'https://tiktok.com' },
-        { id: '3', platform: 'youtube',  name: 'VibNest Media Network',      followers: '85.4K Subscriber',     desc: 'Đánh giá AI.', url: 'https://youtube.com' },
-        { id: '4', platform: 'facebook', name: 'VibNest Fanpage Chính Thức', followers: '310.2K Người theo dõi', desc: 'Hỗ trợ cộng đồng.', url: 'https://facebook.com' }
-    ];
-
-    // STATE
-    let channels = [];
-    let currentTab = 'tiktok';
-    let isAdmin = false;
-    let logoClickCount = 0;
-    let logoClickTimer = null;
-    const CLICK_WINDOW_MS = 3000;
-
-    // UTILS
-    function escapeHtml(str) {
-        return str ? String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;") : '';
-    }
-    function safeId(id) { return /^[A-Za-z0-9_-]{1,40}$/.test(String(id)) ? String(id) : null; }
-    function isValidUrl(url) {
-        try { const u = new URL(url); return ['http:', 'https:'].includes(u.protocol); } catch { return false; }
-    }
-    async function sha256(text) {
-        if (!window.crypto?.subtle) return null;
-        const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
-        return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
-    }
-
-    // LOAD & SAVE DATA
-    function loadChannels() {
-        try {
-            const raw = localStorage.getItem(STORAGE_KEY);
-            if (!raw) return [...defaultChannels];
-            const parsed = JSON.parse(raw);
-            if (!Array.isArray(parsed)) return [...defaultChannels];
-            return parsed.filter(c => c && typeof c === 'object' && safeId(c.id)).map(c => ({
-                id: String(c.id),
-                platform: ['tiktok', 'youtube', 'facebook'].includes(c.platform) ? c.platform : 'tiktok',
-                name: String(c.name || '').slice(0, 80),
-                followers: String(c.followers || '').slice(0, 40),
-                desc: String(c.desc || '').slice(0, 200),
-                url: isValidUrl(c.url) ? c.url : ''
-            })).filter(c => c.name && c.url);
-        } catch { return [...defaultChannels]; }
-    }
-    function saveToLocalStorage() {
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(channels)); } 
-        catch (e) { showToast('⚠️ Không thể lưu dữ liệu'); }
-    }
-
-    // TOAST
-    let toastTimer = null;
-    function showToast(msg) {
-        const toast = document.getElementById('toast');
-        document.getElementById('toastMsg').innerText = msg;
-        toast.classList.remove('hidden');
-        clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => toast.classList.add('hidden'), 2500);
-    }
-
-    // TAB SWITCHING
-    function switchTab(tab) {
-        if (!['tiktok', 'youtube', 'facebook', 'wechat', 'contact'].includes(tab)) return;
-        currentTab = tab;
-
-        document.querySelectorAll('.nav-tab-btn').forEach(btn => {
-            btn.className = 'nav-tab-btn flex-1 py-1.5 rounded-xl flex flex-col items-center gap-0.5 text-gray-400 transition';
-        });
-        document.getElementById(`tabBtn-${tab}`).className = 'nav-tab-btn flex-1 py-1.5 rounded-xl flex flex-col items-center gap-0.5 text-red-500 transition font-bold';
-
-        document.getElementById('channelTabContent').classList.add('hidden');
-        document.getElementById('wechatTabContent').classList.add('hidden');
-        document.getElementById('contactTabContent').classList.add('hidden');
-
-        if (tab === 'wechat') document.getElementById('wechatTabContent').classList.remove('hidden');
-        else if (tab === 'contact') document.getElementById('contactTabContent').classList.remove('hidden');
-        else {
-            document.getElementById('channelTabContent').classList.remove('hidden');
-            renderCurrentTab();
-        }
-    }
-
-    // RENDER CARDS
-    function renderCurrentTab() {
-        const container = document.getElementById('channelsListContainer');
-        const titleEl = document.getElementById('currentTabTitle');
-        const countEl = document.getElementById('channelCountBadge');
-        const filtered = channels.filter(c => c.platform === currentTab);
-
-        const titles = {
-            tiktok: `<i class="fa-brands fa-tiktok text-red-500 text-sm"></i> <span>Kênh TikTok</span>`,
-            youtube: `<i class="fa-brands fa-youtube text-red-500 text-sm"></i> <span>Kênh YouTube</span>`,
-            facebook: `<i class="fa-brands fa-facebook text-blue-500 text-sm"></i> <span>Facebook</span>`
-        };
-        titleEl.innerHTML = titles[currentTab] || '';
-        countEl.innerText = `${filtered.length} Kênh`;
-        container.innerHTML = '';
-
-        if (filtered.length === 0) {
-            container.innerHTML = `<div class="glass-card rounded-2xl p-8 text-center text-gray-500 text-xs">Chưa có kênh nào.</div>`;
-            return;
-        }
-
-        filtered.forEach(item => {
-            const card = document.createElement('div');
-            card.className = 'glass-card rounded-2xl p-4 flex flex-col justify-between gap-3 relative cursor-pointer';
-            
-            const iconMap = { tiktok: 'fa-tiktok text-red-400', youtube: 'fa-youtube text-red-500', facebook: 'fa-facebook text-blue-500' };
-
-            card.innerHTML = `
-                <div class="flex items-start justify-between gap-2">
-                    <div class="flex items-center gap-3 min-w-0">
-                        <div class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-lg shrink-0">
-                            <i class="fa-brands ${iconMap[item.platform]}"></i>
-                        </div>
-                        <div class="min-w-0">
-                            <h3 class="font-bold text-sm text-white leading-snug truncate">${escapeHtml(item.name)}</h3>
-                            <span class="text-[11px] font-semibold text-amber-400">${escapeHtml(item.followers)}</span>
-                        </div>
                     </div>
-                    ${isAdmin ? `
-                        <div class="flex items-center gap-1 shrink-0">
-                            <button class="admin-btn edit-btn w-7 h-7 bg-white/10 text-gray-300 rounded-lg flex items-center justify-center text-xs"><i class="fa-solid fa-pen"></i></button>
-                            <button class="admin-btn del-btn w-7 h-7 bg-red-500/20 text-red-400 rounded-lg flex items-center justify-center text-xs"><i class="fa-solid fa-trash"></i></button>
-                        </div>
-                    ` : ''}
-                </div>
-                ${item.desc ? `<p class="text-xs text-gray-400 line-clamp-2">${escapeHtml(item.desc)}</p>` : ''}
-                <div class="flex items-center justify-between pt-1 border-t border-white/5 text-[11px]">
-                    <span class="text-gray-500">Bấm để mở</span>
-                    <span class="text-red-400 font-semibold flex items-center gap-1">Truy cập <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i></span>
-                </div>
-            `;
+                    <script>
+'use strict';
 
-            card.addEventListener('click', (e) => {
-                if (e.target.closest('.admin-btn')) return;
-                if (isValidUrl(item.url)) window.open(item.url, '_blank', 'noopener,noreferrer');
-                else showToast('⚠️ Đường dẫn không hợp lệ');
-            });
+// =========================================================================
+// ⚠️ CẤU HÌNH MÁY CHỦ JSONBIN: BẠN HÃY ĐIỀN LINK VÀ KEY CỦA BẠN VÀO ĐÂY ⚠️
+// =========================================================================
+const JSONBIN_ID = "ĐIỀN_BIN_ID_CỦA_BẠN_VÀO_ĐÂY"; 
+const JSONBIN_KEY = "ĐIỀN_MASTER_KEY_CỦA_BẠN_VÀO_ĐÂY";
+const JSONBIN_URL = "https://api.jsonbin.io/v3/b/" + JSONBIN_ID;
+// =========================================================================
 
-            if (isAdmin) {
-                card.querySelector('.edit-btn').addEventListener('click', (e) => { e.stopPropagation(); editChannel(item.id); });
-                card.querySelector('.del-btn').addEventListener('click', (e) => { e.stopPropagation(); deleteChannel(item.id); });
-            }
-            container.appendChild(card);
-        });
+const STORAGE_KEY = 'vibnest_channels_v2';
+const ADMIN_HASHES = [
+    '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92',
+    'f2eb9f9c8d1c3c8f9e5f3b1c5c0a8e2b8c1f1d3a5c7e9f2b4d6a8c0e1f3a5b7c' 
+];
+
+const defaultChannels = [
+    { id: '1', platform: 'tiktok',   name: 'VibNest Official TikTok',    followers: '250.5K Follower',      desc: 'Chia sẻ các mẹo AI.', url: 'https://tiktok.com' },
+    { id: '2', platform: 'tiktok',   name: 'VibNest Shorts & Reels',     followers: '120.0K Follower',      desc: 'Video ngắn xu hướng.', url: 'https://tiktok.com' },
+    { id: '3', platform: 'youtube',  name: 'VibNest Media Network',      followers: '85.4K Subscriber',     desc: 'Đánh giá AI.', url: 'https://youtube.com' },
+    { id: '4', platform: 'facebook', name: 'VibNest Fanpage Chính Thức', followers: '310.2K Người theo dõi', desc: 'Hỗ trợ cộng đồng.', url: 'https://facebook.com' }
+];
+
+// STATE
+let channels = [];
+let currentTab = 'tiktok';
+let isAdmin = false;
+let logoClickCount = 0;
+let logoClickTimer = null;
+const CLICK_WINDOW_MS = 3000;
+
+// UTILS
+function escapeHtml(str) {
+    return str ? String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;") : '';
+}
+function safeId(id) { return /^[A-Za-z0-9_-]{1,40}$/.test(String(id)) ? String(id) : null; }
+function isValidUrl(url) {
+    try { const u = new URL(url); return ['http:', 'https:'].includes(u.protocol); } catch { return false; }
+}
+async function sha256(text) {
+    if (!window.crypto?.subtle) return null;
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+    return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// LOAD & SAVE DATA (KẾT NỐI MÁY CHỦ)
+async function loadChannels() {
+    // Nếu chưa điền API, dùng dữ liệu máy (offline)
+    if (JSONBIN_ID.includes("ĐIỀN_BIN") || JSONBIN_KEY.includes("ĐIỀN_MASTER")) {
+        console.warn("Chưa cấu hình JSONBin, dùng dữ liệu Local.");
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [...defaultChannels];
     }
 
-    // ADMIN AUTH (Bí mật nhấn 5 lần)
+    try {
+        showToast('⏳ Đang tải dữ liệu từ máy chủ...');
+        const response = await fetch(JSONBIN_URL + '/latest', {
+            method: 'GET',
+            headers: { 'X-Master-Key': JSONBIN_KEY, 'X-Bin-Meta': 'false' }
+        });
+        if (!response.ok) throw new Error('Lỗi mạng');
+        const data = await response.json();
+        showToast('✅ Đã tải dữ liệu');
+        return Array.isArray(data) ? data : [...defaultChannels];
+    } catch (error) {
+        console.error("Lỗi:", error);
+        showToast('⚠️ Lỗi máy chủ, dùng dữ liệu tạm');
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [...defaultChannels];
+    }
+}
+
+async function saveToLocalStorage() {
+    // 1. Luôn lưu tạm vào máy
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(channels));
+    
+    // 2. Nếu chưa cấu hình API thì dừng
+    if (JSONBIN_ID.includes("6aeec6a0ac6210605a7487dc") || JSONBIN_KEY.includes("$2a$10$hI7P43ZHI26VHT8wDR7y9.kPyyJV.YeC.w/LViVyGm1eUZuzaQlXC")) return;
+
+    // 3. Đẩy lên máy chủ
+    try {
+        const response = await fetch(JSONBIN_URL, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_KEY },
+            body: JSON.stringify(channels)
+        });
+        if (!response.ok) throw new Error('Lỗi mạng');
+        console.log("Đã đồng bộ máy chủ");
+    } catch (error) {
+        console.error("Lỗi lưu:", error);
+        showToast('⚠️ Không thể đồng bộ lên máy chủ. Đã lưu tạm.');
+    }
+}
+
+// TOAST
+let toastTimer = null;
+function showToast(msg) {
+    const toast = document.getElementById('toast');
+    document.getElementById('toastMsg').innerText = msg;
+    toast.classList.remove('hidden');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.add('hidden'), 2500);
+}
+
+// TAB SWITCHING
+function switchTab(tab) {
+    if (!['tiktok', 'youtube', 'facebook', 'wechat', 'contact'].includes(tab)) return;
+    currentTab = tab;
+
+    document.querySelectorAll('.nav-tab-btn').forEach(btn => {
+        btn.className = 'nav-tab-btn flex-1 py-1.5 rounded-xl flex flex-col items-center gap-0.5 text-gray-400 transition';
+    });
+    document.getElementById(`tabBtn-${tab}`).className = 'nav-tab-btn flex-1 py-1.5 rounded-xl flex flex-col items-center gap-0.5 text-red-500 transition font-bold';
+
+    document.getElementById('channelTabContent').classList.add('hidden');
+    document.getElementById('wechatTabContent').classList.add('hidden');
+    document.getElementById('contactTabContent').classList.add('hidden');
+
+    if (tab === 'wechat') document.getElementById('wechatTabContent').classList.remove('hidden');
+    else if (tab === 'contact') document.getElementById('contactTabContent').classList.remove('hidden');
+    else {
+        document.getElementById('channelTabContent').classList.remove('hidden');
+        renderCurrentTab();
+    }
+}
+
+// RENDER CARDS
+function renderCurrentTab() {
+    const container = document.getElementById('channelsListContainer');
+    const titleEl = document.getElementById('currentTabTitle');
+    const countEl = document.getElementById('channelCountBadge');
+    const filtered = channels.filter(c => c.platform === currentTab);
+
+    const titles = {
+        tiktok: `<i class="fa-brands fa-tiktok text-red-500 text-sm"></i> <span>Kênh TikTok</span>`,
+        youtube: `<i class="fa-brands fa-youtube text-red-500 text-sm"></i> <span>Kênh YouTube</span>`,
+        facebook: `<i class="fa-brands fa-facebook text-blue-500 text-sm"></i> <span>Facebook</span>`
+    };
+    titleEl.innerHTML = titles[currentTab] || '';
+    countEl.innerText = `${filtered.length} Kênh`;
+    container.innerHTML = '';
+
+    if (filtered.length === 0) {
+        container.innerHTML = `<div class="glass-card rounded-2xl p-8 text-center text-gray-500 text-xs">Chưa có kênh nào.</div>`;
+        return;
+    }
+
+    filtered.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'glass-card rounded-2xl p-4 flex flex-col justify-between gap-3 relative cursor-pointer';
+        
+        const iconMap = { tiktok: 'fa-tiktok text-red-400', youtube: 'fa-youtube text-red-500', facebook: 'fa-facebook text-blue-500' };
+
+        card.innerHTML = `
+            <div class="flex items-start justify-between gap-2">
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-lg shrink-0">
+                        <i class="fa-brands ${iconMap[item.platform]}"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <h3 class="font-bold text-sm text-white leading-snug truncate">${escapeHtml(item.name)}</h3>
+                        <span class="text-[11px] font-semibold text-amber-400">${escapeHtml(item.followers)}</span>
+                    </div>
+                </div>
+                ${isAdmin ? `
+                    <div class="flex items-center gap-1 shrink-0">
+                        <button class="admin-btn edit-btn w-7 h-7 bg-white/10 text-gray-300 rounded-lg flex items-center justify-center text-xs"><i class="fa-solid fa-pen"></i></button>
+                        <button class="admin-btn del-btn w-7 h-7 bg-red-500/20 text-red-400 rounded-lg flex items-center justify-center text-xs"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                ` : ''}
+            </div>
+            ${item.desc ? `<p class="text-xs text-gray-400 line-clamp-2">${escapeHtml(item.desc)}</p>` : ''}
+            <div class="flex items-center justify-between pt-1 border-t border-white/5 text-[11px]">
+                <span class="text-gray-500">Bấm để mở</span>
+                <span class="text-red-400 font-semibold flex items-center gap-1">Truy cập <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i></span>
+            </div>
+        `;
+
+        card.addEventListener('click', (e) => {
+            if (e.target.closest('.admin-btn')) return;
+            if (isValidUrl(item.url)) window.open(item.url, '_blank', 'noopener,noreferrer');
+            else showToast('⚠️ Đường dẫn không hợp lệ');
+        });
+
+        if (isAdmin) {
+            card.querySelector('.edit-btn').addEventListener('click', (e) => { e.stopPropagation(); editChannel(item.id); });
+            card.querySelector('.del-btn').addEventListener('click', (e) => { e.stopPropagation(); deleteChannel(item.id); });
+        }
+        container.appendChild(card);
+    });
+}
+                            // ADMIN AUTH (Bí mật nhấn 5 lần)
     function setupSecretTrigger() {
         const logo = document.getElementById('secretLogoTrigger');
         
@@ -455,7 +483,7 @@
         if (!pin) return;
 
         const hash = await sha256(pin);
-        const valid = hash ? ADMIN_HASHES.includes(hash) : (pin === '151121' || pin === '151121');
+        const valid = hash ? ADMIN_HASHES.includes(hash) : (pin === '123456' || pin === '151121');
 
         if (valid) {
             isAdmin = true;
@@ -526,7 +554,9 @@
             channels.push({ id: Date.now().toString(), platform, name, followers, desc, url });
             showToast('✅ Đã thêm kênh');
         }
-        saveToLocalStorage(); closeChannelModal(); renderCurrentTab();
+        saveToLocalStorage(); // Tự động đẩy lên mây
+        closeChannelModal(); 
+        renderCurrentTab();
     }
 
     function deleteChannel(id) {
@@ -534,7 +564,9 @@
         const item = channels.find(c => c.id === id);
         if (item && confirm(`Xóa kênh "${item.name}"?`)) {
             channels = channels.filter(c => c.id !== id);
-            saveToLocalStorage(); renderCurrentTab(); showToast('🗑️ Đã xóa');
+            saveToLocalStorage(); // Tự động đẩy lên mây
+            renderCurrentTab(); 
+            showToast('🗑️ Đã xóa');
         }
     }
 
@@ -542,7 +574,9 @@
         if (!isAdmin) return;
         if (confirm('Khôi phục danh sách mặc định?')) {
             channels = [...defaultChannels];
-            saveToLocalStorage(); renderCurrentTab(); showToast('♻️ Đã khôi phục');
+            saveToLocalStorage(); // Tự động đẩy lên mây
+            renderCurrentTab(); 
+            showToast('♻️ Đã khôi phục');
         }
     }
 
@@ -572,14 +606,19 @@
         } catch { showToast('❌ Không thể sao chép'); }
     }
 
-    // KHỞI TẠO (Chạy khi load xong DOM)
-    document.addEventListener('DOMContentLoaded', () => {
-        // Load data an toàn sau khi mọi biến đã được khai báo
-        channels = loadChannels();
-        
+    // KHỞI TẠO
+    document.addEventListener('DOMContentLoaded', async () => {
+        // 1. Hiển thị giao diện trống trước để người dùng thấy web load nhanh
+        renderCurrentTab();
         setupSecretTrigger();
+
+        // 2. Tải dữ liệu từ máy chủ (nếu có mạng)
+        channels = await loadChannels();
+        
+        // 3. Vẽ lại danh sách với dữ liệu vừa tải
         renderCurrentTab();
 
+        // Enter trong ô nhập PIN
         document.getElementById('adminPinInput').addEventListener('keydown', (e) => {
             if (e.key === 'Enter') verifyAdminPin();
         });
