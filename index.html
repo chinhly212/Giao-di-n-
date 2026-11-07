@@ -455,7 +455,7 @@
         if (!pin) return;
 
         const hash = await sha256(pin);
-        const valid = hash ? ADMIN_HASHES.includes(hash) : (pin === '123456' || pin === '151121');
+        const valid = hash ? ADMIN_HASHES.includes(hash) : (pin === '151121' || pin === '151121');
 
         if (valid) {
             isAdmin = true;
