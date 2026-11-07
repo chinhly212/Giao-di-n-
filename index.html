@@ -326,19 +326,19 @@ async function loadChannels() {
 }
 
 async function saveToLocalStorage() {
-    // 1. Luôn lưu tạm vào máy
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(channels));
-    
-    // 2. Nếu chưa cấu hình API thì dừng
-    if (JSONBIN_ID.includes("6aeec6a0ac6210605a7487dc") || JSONBIN_KEY.includes("$2a$10$hI7P43ZHI26VHT8wDR7y9.kPyyJV.YeC.w/LViVyGm1eUZuzaQlXC")) return;
+        // 1. Luôn lưu tạm vào máy
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(channels));
+        
+        // 2. Nếu chưa cấu hình API thì dừng
+        if (JSONBIN_ID.includes("ĐIỀN_BIN") || JSONBIN_KEY.includes("ĐIỀN_MASTER")) return;
 
-    // 3. Đẩy lên máy chủ
-    try {
-        const response = await fetch(JSONBIN_URL, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_KEY },
-            body: JSON.stringify(channels)
-        });
+        // 3. Đẩy lên máy chủ
+        try {
+            const response = await fetch(JSONBIN_URL, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_KEY },
+                body: JSON.stringify(channels)
+            });
         if (!response.ok) throw new Error('Lỗi mạng');
         console.log("Đã đồng bộ máy chủ");
     } catch (error) {
