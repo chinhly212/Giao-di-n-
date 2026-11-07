@@ -34,10 +34,11 @@
                 radial-gradient(circle at 10% 20%, rgba(229, 57, 53, 0.12) 0%, transparent 40%),
                 radial-gradient(circle at 90% 80%, rgba(59, 130, 246, 0.12) 0%, transparent 40%);
             background-attachment: fixed;
+            overflow-y: auto !important;
         }
 
         .glass-panel {
-            background: rgba(11, 16, 29, 0.65);
+            background: rgba(11, 16, 29, 0.75);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.08);
@@ -45,7 +46,7 @@
         }
 
         .glass-card {
-            background: rgba(14, 20, 34, 0.55);
+            background: rgba(14, 20, 34, 0.65);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.06);
@@ -57,7 +58,7 @@
         }
 
         .glass-dock {
-            background: rgba(8, 13, 26, 0.75);
+            background: rgba(8, 13, 26, 0.85);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.12);
@@ -92,22 +93,22 @@
         }
     </style>
 </head>
-<body class="h-screen flex flex-col justify-between overflow-hidden relative select-none">
+<body class="min-h-screen flex flex-col justify-between relative select-none pb-20">
 
     <!-- Top Navigation Header -->
-    <header class="w-full glass-panel px-4 py-3 flex items-center justify-between z-20 shrink-0">
-        <!-- Secret Logo Area (Click 5 times to open Admin) -->
-        <div id="secretLogoTrigger" class="flex items-center gap-2 cursor-pointer active:opacity-75 transition">
-            <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-red-600 via-purple-600 to-blue-600 flex items-center justify-center text-white font-bold text-xs shadow-lg">
+    <header class="w-full glass-panel px-4 py-3 flex items-center justify-between z-20 sticky top-0 shrink-0">
+        <!-- Secret Logo Area (Click 5 times rapidly to open Admin) -->
+        <div id="secretLogoTrigger" class="flex items-center gap-2 cursor-pointer active:opacity-75 transition p-1">
+            <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-red-600 via-purple-600 to-blue-600 flex items-center justify-center text-white font-bold text-xs shadow-lg pointer-events-none">
                 ◈
             </div>
-            <div>
+            <div class="pointer-events-none">
                 <h1 class="font-bold text-sm text-white tracking-wide leading-none">VibNest Enterprise</h1>
                 <span class="text-[9px] text-gray-400 font-medium">Cổng Kết Nối Doanh Nghiệp</span>
             </div>
         </div>
 
-        <!-- Admin Control Toolbar (Only visible when Admin Mode is unlocked) -->
+        <!-- Admin Control Toolbar -->
         <div id="adminToolbar" class="hidden flex items-center gap-2">
             <button onclick="openAddModal()" class="flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-3 py-1.5 rounded-xl transition shadow-md shadow-red-900/40">
                 <i class="fa-solid fa-plus text-[10px]"></i>
@@ -120,9 +121,9 @@
     </header>
 
     <!-- Main Content Display Container -->
-    <main class="flex-1 overflow-y-auto max-w-xl w-full mx-auto px-3 py-4 pb-24">
+    <main class="flex-1 max-w-xl w-full mx-auto px-3 py-4 mb-16">
         
-        <!-- Social Channels Tab View (TikTok / YouTube / Facebook) -->
+        <!-- Social Channels Tab View -->
         <div id="channelTabContent" class="space-y-3">
             <div class="flex items-center justify-between px-1 mb-2">
                 <h2 id="currentTabTitle" class="text-xs font-bold text-gray-300 uppercase tracking-wider flex items-center gap-2">
@@ -149,9 +150,9 @@
 
                 <!-- Circular Custom Glassmorphism QR Code Frame -->
                 <div class="relative w-56 h-56 rounded-full p-3 bg-gradient-to-tr from-emerald-600 via-teal-500 to-cyan-500 flex items-center justify-center shadow-2xl mb-4 pulse-ring">
-                    <!-- Inner Circular Image Display (Using local wechat-qr.png) -->
+                    <!-- Inner Circular Image Display (Falls back gracefully if wechat-qr.png is missing) -->
                     <div class="w-full h-full bg-white rounded-full p-3 flex items-center justify-center relative overflow-hidden border-4 border-black/10">
-                        <img src="wechat-qr.png" alt="WeChat Official QR Code" class="w-full h-full object-cover rounded-full">
+                        <img src="wechat-qr.png" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=weixin://dl/chat?heyuan_zheng_2026'" alt="WeChat Official QR Code" class="w-full h-full object-cover rounded-full">
                     </div>
                 </div>
 
@@ -336,7 +337,8 @@
 
         function setupSecretTrigger() {
             const logoBtn = document.getElementById('secretLogoTrigger');
-            logoBtn.addEventListener('click', () => {
+            logoBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 logoClickCounter++;
                 clearTimeout(logoClickTimer);
                 
@@ -350,7 +352,7 @@
                 } else {
                     logoClickTimer = setTimeout(() => {
                         logoClickCounter = 0;
-                    }, 2000);
+                    }, 2500);
                 }
             });
         }
@@ -362,7 +364,7 @@
 
         function verifyAdminPin() {
             const pin = document.getElementById('adminPinInput').value.trim();
-            if (pin === '151121' || pin === '151121') {
+            if (pin === '123456' || pin === '151121') {
                 isAdmin = true;
                 closeAdminAuthModal();
                 document.getElementById('adminToolbar').classList.remove('hidden');
@@ -569,5 +571,4 @@
         }
     </script>
 </body>
-                        </html>
-                        
+</html>
