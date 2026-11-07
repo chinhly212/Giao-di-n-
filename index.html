@@ -36,7 +36,6 @@
             background-attachment: fixed;
         }
 
-        /* Glassmorphism Classes */
         .glass-panel {
             background: rgba(11, 16, 29, 0.65);
             backdrop-filter: blur(16px);
@@ -64,7 +63,6 @@
             border: 1px solid rgba(255, 255, 255, 0.12);
         }
 
-        /* Custom Scrollbar */
         ::-webkit-scrollbar {
             width: 4px;
         }
@@ -84,7 +82,6 @@
             box-shadow: 0 0 30px rgba(16, 185, 129, 0.4);
         }
 
-        /* Scanning animation ring */
         @keyframes pulse-ring {
             0% { transform: scale(0.95); opacity: 0.8; }
             50% { transform: scale(1.03); opacity: 1; }
@@ -148,19 +145,13 @@
                     <i class="fa-brands fa-weixin"></i>
                 </div>
                 <h3 class="text-base font-bold text-white mb-0.5">👻正👻</h3>
-                <p class="text-[11px] text-gray-400 mb-4">Quét mã QR tròn thiết kế riêng để kết nối WeChat</p>
+                <p class="text-[11px] text-gray-400 mb-4">Quét mã QR chính chủ để kết nối WeChat</p>
 
                 <!-- Circular Custom Glassmorphism QR Code Frame -->
                 <div class="relative w-56 h-56 rounded-full p-3 bg-gradient-to-tr from-emerald-600 via-teal-500 to-cyan-500 flex items-center justify-center shadow-2xl mb-4 pulse-ring">
-                    <!-- Inner White Circular Display -->
-                    <div class="w-full h-full bg-white rounded-full p-4 flex items-center justify-center relative overflow-hidden border-4 border-black/10">
-                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=weixin://dl/chat?heyuan_zheng_2026&ecc=H" alt="WeChat Circular QR Code" class="w-full h-full object-contain rounded-full">
-                        <!-- Center Logo Overlay -->
-                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-                            <div class="w-11 h-11 bg-emerald-600 text-white rounded-full border-2 border-white flex items-center justify-center shadow-lg text-lg">
-                                <i class="fa-brands fa-weixin"></i>
-                            </div>
-                        </div>
+                    <!-- Inner Circular Image Display (Using local wechat-qr.png) -->
+                    <div class="w-full h-full bg-white rounded-full p-3 flex items-center justify-center relative overflow-hidden border-4 border-black/10">
+                        <img src="wechat-qr.png" alt="WeChat Official QR Code" class="w-full h-full object-cover rounded-full">
                     </div>
                 </div>
 
@@ -178,8 +169,8 @@
                         <span class="font-semibold text-white">Hà Nguyên (河源)</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-gray-400">Định dạng mã:</span>
-                        <span class="font-mono text-emerald-400 font-bold">Circular Web Pass</span>
+                        <span class="text-gray-400">Trạng thái mã:</span>
+                        <span class="font-mono text-emerald-400 font-bold">100% Chính chủ (Quét trực tiếp)</span>
                     </div>
                 </div>
 
@@ -325,7 +316,6 @@
 
     <!-- JavaScript Application Core -->
     <script>
-        // Default initial channels data
         const defaultChannels = [
             { id: '1', platform: 'tiktok', name: 'VibNest Official TikTok', followers: '250.5K Follower', desc: 'Chia sẻ các mẹo AI và ứng dụng di động đỉnh cao.', url: 'https://tiktok.com' },
             { id: '2', platform: 'tiktok', name: 'VibNest Shorts & Reels', followers: '120.0K Follower', desc: 'Video ngắn highlight xu hướng mỗi ngày.', url: 'https://tiktok.com' },
@@ -339,13 +329,11 @@
         let logoClickCounter = 0;
         let logoClickTimer = null;
 
-        // Initialize application state
         document.addEventListener('DOMContentLoaded', () => {
             renderCurrentTab();
             setupSecretTrigger();
         });
 
-        // Secret Admin trigger: Click logo 5 times within 2 seconds
         function setupSecretTrigger() {
             const logoBtn = document.getElementById('secretLogoTrigger');
             logoBtn.addEventListener('click', () => {
@@ -392,11 +380,8 @@
             renderCurrentTab();
         }
 
-        // Tab Navigation Switcher
         function switchTab(tab) {
             currentTab = tab;
-            
-            // Update active styles on dock navigation
             document.querySelectorAll('.nav-tab-btn').forEach(btn => {
                 btn.className = 'nav-tab-btn flex-1 py-1.5 rounded-xl flex flex-col items-center gap-0.5 text-gray-400 transition';
             });
@@ -406,7 +391,6 @@
                 activeBtn.className = 'nav-tab-btn flex-1 py-1.5 rounded-xl flex flex-col items-center gap-0.5 text-red-500 transition font-bold';
             }
 
-            // Hide/Show main content sections
             document.getElementById('channelTabContent').classList.add('hidden');
             document.getElementById('wechatTabContent').classList.add('hidden');
             document.getElementById('contactTabContent').classList.add('hidden');
@@ -421,7 +405,6 @@
             }
         }
 
-        // Render Cards inside active social tab
         function renderCurrentTab() {
             const container = document.getElementById('channelsListContainer');
             const titleEl = document.getElementById('currentTabTitle');
@@ -429,7 +412,6 @@
 
             const filtered = channels.filter(c => c.platform === currentTab);
 
-            // Set Title & Icons based on platform
             if (currentTab === 'tiktok') {
                 titleEl.innerHTML = `<i class="fa-brands fa-tiktok text-red-500 text-sm"></i> <span>Kênh TikTok</span>`;
             } else if (currentTab === 'youtube') {
@@ -454,7 +436,6 @@
                 const card = document.createElement('div');
                 card.className = 'glass-card rounded-2xl p-4 flex flex-col justify-between gap-3 relative cursor-pointer';
                 
-                // Allow clicking the card directly to open the social link for users
                 card.onclick = (e) => {
                     if (e.target.closest('.admin-btn')) return;
                     window.open(item.url, '_blank');
@@ -501,7 +482,6 @@
             });
         }
 
-        // Add / Edit Channel Functions
         function openAddModal() {
             document.getElementById('editChannelId').value = '';
             document.getElementById('formPlatform').value = currentTab;
@@ -541,14 +521,12 @@
             const url = document.getElementById('formUrl').value.trim();
 
             if (editId) {
-                // Update existing
                 const index = channels.findIndex(c => c.id === editId);
                 if (index !== -1) {
                     channels[index] = { id: editId, platform, name, followers, desc, url };
                     showToast('Đã cập nhật thông tin kênh!');
                 }
             } else {
-                // Add new
                 const newId = Date.now().toString();
                 channels.push({ id: newId, platform, name, followers, desc, url });
                 showToast('Đã thêm kênh mới thành công!');
@@ -572,13 +550,11 @@
             localStorage.setItem('vibnest_channels', JSON.stringify(channels));
         }
 
-        // Copy Helper
         function copyWeChatName() {
             navigator.clipboard.writeText('👻正👻');
             showToast('Đã sao chép tên WeChat: 👻正👻');
         }
 
-        // Toast Helper
         function showToast(msg) {
             const toast = document.getElementById('toast');
             document.getElementById('toastMsg').innerText = msg;
@@ -593,5 +569,5 @@
         }
     </script>
 </body>
-</html>
-
+                        </html>
+                        
