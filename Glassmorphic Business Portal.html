@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VibNest Enterprise - Glassmorphic Portal</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        glassBg: 'rgba(15, 23, 42, 0.65)',
+                        glassBorder: 'rgba(255, 255, 255, 0.12)',
+                        glassCard: 'rgba(30, 41, 59, 0.45)',
+                        glassHover: 'rgba(255, 255, 255, 0.08)',
+                        brandPrimary: '#3b82f6',
+                        brandPurple: '#8b5cf6',
+                        brandPink: '#ec4899',
+                        brandTikTok: '#ff0050',
+                        brandYouTube: '#ff0000',
+                        brandFacebook: '#1877f2',
+                        brandWeChat: '#07c160'
+                    },
+                    animation: {
+                        'blob': 'blob 10s infinite alternate',
+                        'blob-slow': 'blob 15s infinite alternate-reverse',
+                        'pulse-glow': 'pulseGlow 3s infinite'
+                    },
+                    keyframes: {
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(40px, -60px) scale(1.15)' },
+                            '66%': { transform: 'translate(-30px, 30px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' }
+                        },
+                        pulseGlow: {
+                            '0%, 100%': { opacity: '0.4', filter: 'drop-shadow(0 0 15px rgba(59,130,246,0.5))' },
+                            '50%': { opacity: '0.8', filter: 'drop-shadow(0 0 25px rgba(236,72,153,0.7))' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #030712;
+            color: #f3f4f6;
+            overflow-x: hidden;
+        }
+
+        /* Glassmorphism Liquid Styling */
+        .liquid-glass {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .liquid-glass-card {
+            background: rgba(15, 23, 42, 0.55);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .liquid-glass-card:hover {
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-4px);
+            box-shadow: 0 15px 35px -5px rgba(59, 130, 246, 0.25);
+        }
+
+        .liquid-tab-active {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.05) 100%);
+            border-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2), inset 0 0 15px rgba(255, 255, 255, 0.1);
+            color: #ffffff !important;
+        }
+
+        .bg-glow-1 {
+            position: absolute;
+            top: -10%;
+            left: -10%;
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, rgba(236,72,153,0.3) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            filter: blur(60px);
+            pointer-events: none;
+        }
+
+        .bg-glow-2 {
+            position: absolute;
+            bottom: -10%;
+            right: -10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(59,130,246,0.3) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            filter: blur(70px);
+            pointer-events: none;
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(3, 7, 18, 0.8);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between relative bg-[#030712] text-gray-100 overflow-x-hidden select-none">
+
+    <!-- Ambient Background Blobs -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div class="bg-glow-1 animate-blob"></div>
+        <div class="bg-glow-2 animate-blob-slow"></div>
+    </div>
+
+    <!-- Top Header Navigation -->
+    <header class="sticky top-0 z-40 w-full px-4 py-3 liquid-glass border-b border-white/10 backdrop-blur-xl shrink-0">
+        <div class="max-w-5xl mx-auto flex items-center justify-between">
+            <!-- Brand Logo (Secret Easter Egg Trigger: Click 5 Times fast) -->
+            <div id="brandLogoTrigger" onclick="handleSecretClick()" class="flex items-center gap-3 cursor-pointer active:scale-95 transition">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-500 to-pink-500 flex items-center justify-center shadow-lg shadow-blue-500/30 border border-white/30 animate-pulse-glow">
+                    <i class="fa-solid fa-gem text-white text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-base font-extrabold tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-white via-blue-100 to-gray-300">
+                        VibNest Enterprise
+                    </h1>
+                    <p class="text-[10px] text-blue-400 font-medium tracking-wider uppercase">Cổng kết nối truyền thông</p>
+                </div>
+            </div>
+
+            <!-- Admin Status Indicator (Only Visible when Admin Unlocked) -->
+            <div id="adminBadge" class="hidden flex items-center gap-2">
+                <div class="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                    <span>Admin Mode</span>
+                </div>
+                <button onclick="logoutAdmin()" class="w-8 h-8 rounded-xl bg-red-500/20 border border-red-500/40 text-red-400 hover:bg-red-500/30 flex items-center justify-center text-xs transition" title="Đăng xuất Admin">
+                    <i class="fa-solid fa-power-off"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Admin Control Bar (Only Visible in Admin Mode) -->
+    <div id="adminControlBar" class="hidden sticky top-[61px] z-30 w-full bg-slate-900/90 border-b border-amber-500/30 backdrop-blur-md px-4 py-2.5">
+        <div class="max-w-5xl mx-auto flex items-center justify-between gap-3">
+            <span class="text-xs text-amber-300 font-semibold flex items-center gap-1.5">
+                <i class="fa-solid fa-user-shield"></i> Bảng điều khiển Quản trị viên
+            </span>
+            <button onclick="openAddModal()" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-pink-600 text-white font-bold text-xs shadow-md flex items-center gap-1.5 active:scale-95 transition">
+                <i class="fa-solid fa-plus"></i>
+                <span>Thêm kênh mới</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 max-w-5xl w-full mx-auto px-4 py-4 z-10 flex flex-col justify-start">
+        <div id="tabContentArea" class="transition-all duration-300">
+            <!-- Dynamic Tab Content Rendered Here -->
+        </div>
+    </main>
+
+    <!-- Bottom Liquid Glass Dock Navigation -->
+    <footer class="sticky bottom-4 z-40 px-4 w-full max-w-xl mx-auto shrink-0">
+        <nav class="liquid-glass rounded-3xl p-1.5 flex items-center justify-around border border-white/20 shadow-2xl shadow-black/90">
+            
+            <button onclick="switchTab('tiktok')" id="tab-tiktok" class="nav-tab flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-2xl text-gray-400 hover:text-white transition duration-200 gap-1">
+                <i class="fa-brands fa-tiktok text-lg"></i>
+                <span class="text-[10px] font-semibold tracking-tight">TikTok</span>
+            </button>
+
+            <button onclick="switchTab('youtube')" id="tab-youtube" class="nav-tab flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-2xl text-gray-400 hover:text-white transition duration-200 gap-1">
+                <i class="fa-brands fa-youtube text-lg"></i>
+                <span class="text-[10px] font-semibold tracking-tight">YouTube</span>
+            </button>
+
+            <button onclick="switchTab('facebook')" id="tab-facebook" class="nav-tab flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-2xl text-gray-400 hover:text-white transition duration-200 gap-1">
+                <i class="fa-brands fa-facebook text-lg"></i>
+                <span class="text-[10px] font-semibold tracking-tight">Facebook</span>
+            </button>
+
+            <button onclick="switchTab('wechat')" id="tab-wechat" class="nav-tab flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-2xl text-gray-400 hover:text-white transition duration-200 gap-1">
+                <i class="fa-brands fa-weixin text-lg"></i>
+                <span class="text-[10px] font-semibold tracking-tight">WeChat</span>
+            </button>
+
+            <button onclick="switchTab('contact')" id="tab-contact" class="nav-tab flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-2xl text-gray-400 hover:text-white transition duration-200 gap-1">
+                <i class="fa-solid fa-address-card text-lg"></i>
+                <span class="text-[10px] font-semibold tracking-tight">Liên hệ</span>
+            </button>
+        </nav>
+    </footer>
+
+    <!-- SECRET MODAL: Admin PIN Verification -->
+    <div id="secretPinModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="liquid-glass-card w-full max-w-xs rounded-3xl p-6 border border-amber-500/30 shadow-2xl relative text-center">
+            <button onclick="closeSecretModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white w-7 h-7 rounded-full bg-white/5 flex items-center justify-center border border-white/10 transition">
+                <i class="fa-solid fa-xmark text-xs"></i>
+            </button>
+
+            <div class="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-400 text-xl mx-auto mb-3">
+                <i class="fa-solid fa-user-lock"></i>
+            </div>
+            <h3 class="text-base font-bold text-white mb-1">Mã PIN Quản trị viên</h3>
+            <p class="text-[11px] text-gray-400 mb-4">Nhập mã xác thực bí mật để kích hoạt Admin</p>
+
+            <form onsubmit="handleSecretPinSubmit(event)" class="space-y-3">
+                <input type="password" id="secretPinInput" maxlength="10" placeholder="••••••" class="w-full text-center bg-slate-900/90 border border-white/20 rounded-xl px-3 py-2.5 text-base tracking-widest text-amber-300 focus:outline-none focus:border-amber-400 transition font-mono">
+                <button type="submit" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-black text-xs shadow-lg transition active:scale-95">
+                    Xác nhận mở khóa
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: Add / Edit Channel Form (Admin Mode) -->
+    <div id="channelModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="liquid-glass-card w-full max-w-md rounded-3xl p-6 border border-white/20 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button onclick="closeChannelModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white w-8 h-8 rounded-full bg-white/5 flex items-center justify-center border border-white/10 transition">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="flex items-center gap-3 mb-5">
+                <div class="w-10 h-10 rounded-2xl bg-blue-600/30 border border-blue-400/40 flex items-center justify-center text-blue-400 text-lg">
+                    <i id="modalFormIcon" class="fa-solid fa-sliders"></i>
+                </div>
+                <div>
+                    <h3 id="modalFormTitle" class="text-base font-bold text-white">Quản lý kênh truyền thông</h3>
+                    <p class="text-xs text-gray-400">Cập nhật dữ liệu hiển thị cho người dùng</p>
+                </div>
+            </div>
+
+            <form id="channelForm" onsubmit="handleChannelFormSubmit(event)" class="space-y-4">
+                <input type="hidden" id="editChannelId" value="">
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 mb-1">Chọn nền tảng</label>
+                    <select id="modalPlatform" class="w-full bg-slate-900/90 border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-400 transition">
+                        <option value="tiktok">TikTok</option>
+                        <option value="youtube">YouTube</option>
+                        <option value="facebook">Facebook</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 mb-1">Tên tài khoản / Kênh</label>
+                    <input type="text" id="modalChannelName" required placeholder="Ví dụ: VibNest Official" class="w-full bg-slate-900/90 border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-blue-400 transition">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 mb-1">Đường dẫn Ẩn (URL Chuyển hướng)</label>
+                    <input type="text" id="modalChannelUrl" required placeholder="https://tiktok.com/@vibnest" class="w-full bg-slate-900/90 border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-blue-400 transition">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 mb-1">Số lượng Người theo dõi / Đăng ký</label>
+                    <input type="text" id="modalSubscribers" placeholder="Ví dụ: 250.5K Follower" class="w-full bg-slate-900/90 border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-blue-400 transition">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 mb-1">Mô tả ngắn về kênh</label>
+                    <textarea id="modalDesc" rows="2" placeholder="Nội dung giới thiệu ngắn..." class="w-full bg-slate-900/90 border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-blue-400 transition resize-none"></textarea>
+                </div>
+
+                <div class="pt-2 flex gap-3">
+                    <button type="button" onclick="closeChannelModal()" class="flex-1 py-2.5 rounded-xl bg-white/5 border border-white/10 text-xs text-gray-300 font-semibold hover:bg-white/10 transition">Hủy</button>
+                    <button type="submit" class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-pink-600 text-xs text-white font-bold shadow-lg shadow-pink-500/30 hover:opacity-90 transition">Lưu dữ liệu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification Popup -->
+    <div id="toast" class="hidden fixed top-16 left-1/2 -translate-x-1/2 z-50 liquid-glass border border-emerald-400/50 text-emerald-300 text-xs px-4 py-2 rounded-2xl shadow-2xl flex items-center gap-2 whitespace-nowrap">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
+        <span id="toastMsg">Thao tác thành công!</span>
+    </div>
+
+    <!-- Core Interactive JavaScript -->
+    <script>
+        const DEFAULT_CHANNELS = {
+            tiktok: [
+                { id: 1, name: "VibNest Official TikTok", url: "https://tiktok.com/@vibnest", subs: "250.5K Follower", desc: "Chia sẻ mẹo AI, công nghệ và phần mềm đỉnh cao.", icon: "fa-tiktok", color: "from-pink-500 to-rose-600" },
+                { id: 2, name: "Chinh Ly Tech Vibe", url: "https://tiktok.com/@chinhlytech", subs: "89.2K Follower", desc: "Review sản phẩm công nghệ và góc nhìn lập trình.", icon: "fa-tiktok", color: "from-pink-500 to-rose-600" }
+            ],
+            youtube: [
+                { id: 1, name: "VibNest Enterprise Channel", url: "https://youtube.com/@vibnest", subs: "500K Người đăng ký", desc: "Kênh phát sóng bài giảng và bản tin công nghệ hàng tuần.", icon: "fa-youtube", color: "from-red-600 to-orange-600" }
+            ],
+            facebook: [
+                { id: 1, name: "VibNest AI Fanpage", url: "https://facebook.com/vibnest.ai", subs: "180K Lượt thích", desc: "Cộng đồng cập nhật tin tức trí tuệ nhân tạo.", icon: "fa-facebook", color: "from-blue-600 to-indigo-600" }
+            ]
+        };
+
+        let channelData = JSON.parse(localStorage.getItem('vibnest_channels')) || DEFAULT_CHANNELS;
+        let isAdmin = false;
+        let currentTab = 'tiktok';
+        let secretClickCount = 0;
+        let secretClickTimer = null;
+
+        window.onload = function() {
+            switchTab('tiktok');
+        };
+
+        function saveToStorage() {
+            localStorage.setItem('vibnest_channels', JSON.stringify(channelData));
+        }
+
+        // Secret Easter Egg Admin Trigger (Click 5 times on Logo)
+        function handleSecretClick() {
+            secretClickCount++;
+            clearTimeout(secretClickTimer);
+
+            if (secretClickCount >= 5) {
+                secretClickCount = 0;
+                if (!isAdmin) {
+                    document.getElementById('secretPinModal').classList.remove('hidden');
+                    document.getElementById('secretPinInput').focus();
+                } else {
+                    showToast("Bạn đang ở chế độ Quản trị viên!", "info");
+                }
+            } else {
+                secretClickTimer = setTimeout(() => {
+                    secretClickCount = 0;
+                }, 2000);
+            }
+        }
+
+        function closeSecretModal() {
+            document.getElementById('secretPinModal').classList.add('hidden');
+            document.getElementById('secretPinInput').value = '';
+        }
+
+        function handleSecretPinSubmit(e) {
+            e.preventDefault();
+            const pin = document.getElementById('secretPinInput').value.trim();
+            if (pin === '123456' || pin === '151121') {
+                isAdmin = true;
+                closeSecretModal();
+                updateAdminUI();
+                showToast("🔓 Đã mở khóa quyền Quản trị viên!", "success");
+            } else {
+                showToast("Mã PIN không đúng!", "error");
+                document.getElementById('secretPinInput').value = '';
+            }
+        }
+
+        function logoutAdmin() {
+            isAdmin = false;
+            updateAdminUI();
+            showToast("Đã đăng xuất Admin", "info");
+        }
+
+        function updateAdminUI() {
+            const badge = document.getElementById('adminBadge');
+            const controlBar = document.getElementById('adminControlBar');
+            if (isAdmin) {
+                badge.classList.remove('hidden');
+                badge.classList.add('flex');
+                controlBar.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+                badge.classList.remove('flex');
+                controlBar.classList.add('hidden');
+            }
+            switchTab(currentTab);
+        }
+
+        // Tab Switch Logic
+        function switchTab(tabName) {
+            currentTab = tabName;
+
+            document.querySelectorAll('.nav-tab').forEach(btn => {
+                btn.classList.remove('liquid-tab-active');
+            });
+            const activeTabBtn = document.getElementById(`tab-${tabName}`);
+            if (activeTabBtn) activeTabBtn.classList.add('liquid-tab-active');
+
+            const container = document.getElementById('tabContentArea');
+            container.style.opacity = '0';
+
+            setTimeout(() => {
+                if (['tiktok', 'youtube', 'facebook'].includes(tabName)) {
+                    renderMediaChannels(tabName);
+                } else if (tabName === 'wechat') {
+                    renderWeChatTab();
+                } else if (tabName === 'contact') {
+                    renderContactTab();
+                }
+                container.style.opacity = '1';
+            }, 120);
+        }
+
+        // Render Media Channels (Client & Admin View)
+        function renderMediaChannels(platform) {
+            const list = channelData[platform] || [];
+            let platformTitle = platform.toUpperCase();
+            let platformIcon = platform === 'tiktok' ? 'fa-tiktok' : platform === 'youtube' ? 'fa-youtube' : 'fa-facebook';
+
+            let html = `
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between px-1 mb-2">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-brands ${platformIcon} text-lg text-white"></i>
+                            <h3 class="text-sm font-bold text-white uppercase">Danh sách kênh ${platformTitle} (${list.length})</h3>
+                        </div>
+                    </div>
+            `;
+
+            if (list.length === 0) {
+                html += `
+                    <div class="liquid-glass-card rounded-2xl p-8 text-center text-gray-400">
+                        <i class="fa-solid fa-folder-open text-3xl mb-2 text-gray-500"></i>
+                        <p class="text-xs">Chưa có kênh nào trong danh mục này.</p>
+                    </div>
+                `;
+            } else {
+                html += `<div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">`;
+                list.forEach(item => {
+                    html += `
+                        <div onclick="navigateToUrl('${escapeHtml(item.url)}')" class="liquid-glass-card rounded-2xl p-4 border border-white/10 flex flex-col justify-between cursor-pointer group hover:border-blue-400/50 transition">
+                            <div>
+                                <div class="flex items-start justify-between gap-3 mb-2.5">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr ${item.color || 'from-blue-600 to-indigo-600'} flex items-center justify-center text-white text-lg shadow-md border border-white/20 shrink-0">
+                                            <i class="fa-brands ${item.icon}"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="text-sm font-bold text-white group-hover:text-blue-300 transition">${escapeHtml(item.name)}</h4>
+                                            <span class="text-[11px] text-emerald-400 font-semibold">${escapeHtml(item.subs)}</span>
+                                        </div>
+                                    </div>
+
+                                    ${isAdmin ? `
+                                        <div class="flex items-center gap-1.5 shrink-0" onclick="event.stopPropagation();">
+                                            <button onclick="editChannel('${platform}', ${item.id})" class="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-300 hover:bg-amber-500/40 flex items-center justify-center text-xs transition" title="Sửa">
+                                                <i class="fa-solid fa-pen"></i>
+                                            </button>
+                                            <button onclick="deleteChannel('${platform}', ${item.id})" class="w-7 h-7 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/40 flex items-center justify-center text-xs transition" title="Xóa">
+                                                <i class="fa-solid fa-trash-can"></i>
+                                            </button>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                                <p class="text-xs text-gray-300 mb-3 leading-relaxed line-clamp-2">${escapeHtml(item.desc)}</p>
+                            </div>
+                            
+                            <div class="pt-2.5 border-t border-white/10 flex items-center justify-between">
+                                <span class="text-[10px] text-blue-400 font-medium flex items-center gap-1">
+                                    <i class="fa-solid fa-circle-check text-[9px]"></i> Kênh chính thức
+                                </span>
+                                <button class="px-3 py-1.5 rounded-xl bg-white/10 group-hover:bg-blue-600 text-white text-xs font-semibold flex items-center gap-1.5 transition">
+                                    <span>Mở ứng dụng</span>
+                                    <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+
+            html += `</div>`;
+            document.getElementById('tabContentArea').innerHTML = html;
+        }
+
+        // Render WeChat Scan Tab
+        function renderWeChatTab() {
+            let html = `
+                <div class="max-w-md mx-auto space-y-4">
+                    <div class="liquid-glass-card rounded-3xl p-6 text-center border border-emerald-500/30 shadow-2xl relative">
+                        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold mb-3">
+                            <i class="fa-brands fa-weixin"></i> Quét mã QR WeChat
+                        </div>
+                        <h3 class="text-base font-bold text-white mb-1">Kết nối WeChat Doanh Nghiệp</h3>
+                        <p class="text-xs text-gray-300 mb-4">Sử dụng tính năng **Quét (Scan)** trên WeChat để kết nối trực tiếp.</p>
+
+                        <!-- QR Box -->
+                        <div class="relative w-48 h-48 mx-auto bg-white p-3 rounded-2xl shadow-2xl border-4 border-emerald-500/40 flex items-center justify-center mb-4">
+                            <svg class="w-full h-full" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect width="100" height="100" fill="white"/>
+                                <path d="M10 10H35V35H10V10ZM15 15V30H30V15H15Z" fill="#07c160"/>
+                                <path d="M20 20H25V25H20V20Z" fill="#07c160"/>
+                                <path d="M65 10H90V35H65V10ZM70 15V30H85V15H70Z" fill="#07c160"/>
+                                <path d="M75 20H80V25H75V20Z" fill="#07c160"/>
+                                <path d="M10 65H35V90H10V65ZM15 70V85H30V70H15Z" fill="#07c160"/>
+                                <path d="M20 75H25V80H20V75Z" fill="#07c160"/>
+                                <path d="M40 10H45V20H40V10ZM50 15H60V20H50V15ZM40 25H55V35H40V25ZM60 25H65V35H60V25Z" fill="#111827"/>
+                                <path d="M10 40H20V50H10V40ZM25 45H35V50H25V45ZM40 40H60V45H40V40ZM45 50H55V60H45V50Z" fill="#111827"/>
+                                <path d="M65 40H75V45H65V40ZM80 40H90V55H80V40ZM70 50H80V60H70V50Z" fill="#111827"/>
+                                <path d="M40 65H50V75H40V65ZM55 65H65V80H55V65ZM40 80H50V90H40V80Z" fill="#111827"/>
+                                <path d="M70 65H90V70H70V65ZM65 75H75V90H65V75ZM80 80H90V90H80V80Z" fill="#111827"/>
+                                <circle cx="50" cy="50" r="10" fill="#07c160"/>
+                            </svg>
+                        </div>
+
+                        <!-- WeChat Info Details -->
+                        <div class="bg-slate-900/80 rounded-xl p-3 border border-white/10 mb-4 space-y-1.5 text-xs text-left">
+                            <div class="flex justify-between items-center"><span class="text-gray-400">ID WeChat:</span> <span class="font-mono text-emerald-300 font-bold">sphAnCiyne0pWI5</span></div>
+                            <div class="flex justify-between items-center"><span class="text-gray-400">Vị trí địa lý:</span> <span class="text-white font-semibold">Hồ Nam - Thiệu Dương (湖南 邵阳)</span></div>
+                        </div>
+
+                        <div class="flex gap-2.5">
+                            <button onclick="copyToClipboard('sphAnCiyne0pWI5')" class="flex-1 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition">
+                                <i class="fa-regular fa-copy text-xs"></i>
+                                <span>Sao chép ID</span>
+                            </button>
+                            <button onclick="showToast('Đã lưu mã QR vào thiết bị!')" class="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-1.5 transition">
+                                <i class="fa-solid fa-download text-xs"></i>
+                                <span>Tải mã QR</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('tabContentArea').innerHTML = html;
+        }
+
+        // Render Owner Contact Tab
+        function renderContactTab() {
+            let html = `
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="md:col-span-1 liquid-glass-card rounded-3xl p-5 border border-white/15 text-center flex flex-col items-center justify-between">
+                        <div>
+                            <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-blue-500 via-indigo-500 to-pink-500 p-1 shadow-xl mx-auto mb-3">
+                                <img src="https://placehold.co/200x200/0f172a/ffffff?text=Chinh+Ly" alt="Owner Avatar" class="w-full h-full rounded-full object-cover border-2 border-slate-900">
+                            </div>
+                            <h3 class="text-base font-extrabold text-white">Chinh Ly (VibNest)</h3>
+                            <p class="text-xs text-blue-400 font-medium mb-3">Chủ sở hữu & Sáng lập</p>
+                            <p class="text-xs text-gray-300 leading-relaxed mb-5">
+                                Giải pháp truyền thông đa kênh & tự động hóa doanh nghiệp.
+                            </p>
+                        </div>
+
+                        <a href="tel:0123456789" onclick="showToast('Đang khởi tạo cuộc gọi...')" class="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2 transition">
+                            <i class="fa-solid fa-phone"></i>
+                            <span>Gọi điện thoại</span>
+                        </a>
+                    </div>
+
+                    <div class="md:col-span-2 liquid-glass-card rounded-3xl p-5 border border-white/15">
+                        <h3 class="text-sm font-bold text-white mb-3">Gửi yêu cầu trực tiếp</h3>
+                        <form onsubmit="handleContactSubmit(event)" class="space-y-3">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <input type="text" required placeholder="Họ tên của bạn" class="bg-slate-900/90 border border-white/15 rounded-xl px-3.5 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-blue-400">
+                                <input type="tel" required placeholder="Số điện thoại" class="bg-slate-900/90 border border-white/15 rounded-xl px-3.5 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-blue-400">
+                            </div>
+                            <textarea rows="3" required placeholder="Nội dung tin nhắn..." class="w-full bg-slate-900/90 border border-white/15 rounded-xl px-3.5 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-blue-400 resize-none"></textarea>
+                            <button type="submit" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-pink-600 text-white font-bold text-xs shadow-lg transition active:scale-95">
+                                Gửi tin nhắn ngay
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            `;
+            document.getElementById('tabContentArea').innerHTML = html;
+        }
+
+        // Navigate Client safely without showing URL text
+        function navigateToUrl(url) {
+            if (url) {
+                window.open(url, '_blank');
+            }
+        }
+
+        // Admin Channel Management (Add/Edit/Delete)
+        function openAddModal(platform = 'tiktok') {
+            document.getElementById('editChannelId').value = '';
+            document.getElementById('modalFormTitle').innerText = 'Thêm kênh mới';
+            document.getElementById('modalPlatform').value = currentTab !== 'wechat' && currentTab !== 'contact' ? currentTab : platform;
+            document.getElementById('modalChannelName').value = '';
+            document.getElementById('modalChannelUrl').value = '';
+            document.getElementById('modalSubscribers').value = '';
+            document.getElementById('modalDesc').value = '';
+            document.getElementById('channelModal').classList.remove('hidden');
+        }
+
+        function editChannel(platform, id) {
+            const item = channelData[platform].find(c => c.id === id);
+            if (!item) return;
+
+            document.getElementById('editChannelId').value = item.id;
+            document.getElementById('modalFormTitle').innerText = 'Sửa thông tin kênh';
+            document.getElementById('modalPlatform').value = platform;
+            document.getElementById('modalChannelName').value = item.name;
+            document.getElementById('modalChannelUrl').value = item.url;
+            document.getElementById('modalSubscribers').value = item.subs;
+            document.getElementById('modalDesc').value = item.desc;
+            document.getElementById('channelModal').classList.remove('hidden');
+        }
+
+        function closeChannelModal() {
+            document.getElementById('channelModal').classList.add('hidden');
+        }
+
+        function handleChannelFormSubmit(e) {
+            e.preventDefault();
+            const editId = document.getElementById('editChannelId').value;
+            const platform = document.getElementById('modalPlatform').value;
+            const name = document.getElementById('modalChannelName').value.trim();
+            const url = document.getElementById('modalChannelUrl').value.trim();
+            const subs = document.getElementById('modalSubscribers').value.trim() || '0 Follower';
+            const desc = document.getElementById('modalDesc').value.trim() || 'Chưa có mô tả.';
+
+            const iconMap = { tiktok: 'fa-tiktok', youtube: 'fa-youtube', facebook: 'fa-facebook' };
+            const colorMap = { tiktok: 'from-pink-500 to-rose-600', youtube: 'from-red-600 to-orange-600', facebook: 'from-blue-600 to-indigo-600' };
+
+            if (editId) {
+                const idNum = parseInt(editId);
+                let item = channelData[platform].find(c => c.id === idNum);
+                if (item) {
+                    item.name = name;
+                    item.url = url;
+                    item.subs = subs;
+                    item.desc = desc;
+                }
+                showToast("Đã cập nhật kênh thành công!", "success");
+            } else {
+                const newItem = {
+                    id: Date.now(),
+                    name: name,
+                    url: url,
+                    subs: subs,
+                    desc: desc,
+                    icon: iconMap[platform],
+                    color: colorMap[platform]
+                };
+                if (!channelData[platform]) channelData[platform] = [];
+                channelData[platform].unshift(newItem);
+                showToast("Đã thêm kênh mới!", "success");
+            }
+
+            saveToStorage();
+            closeChannelModal();
+            switchTab(platform);
+        }
+
+        function deleteChannel(platform, id) {
+            if (confirm("Bạn có chắc chắn muốn xóa kênh này?")) {
+                channelData[platform] = channelData[platform].filter(item => item.id !== id);
+                saveToStorage();
+                showToast("Đã xóa kênh!", "info");
+                renderMediaChannels(platform);
+            }
+        }
+
+        function handleContactSubmit(e) {
+            e.preventDefault();
+            showToast("Đã gửi thông tin liên hệ thành công!");
+            e.target.reset();
+        }
+
+        function copyToClipboard(text) {
+            const tempInput = document.createElement('input');
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            showToast(`Đã sao chép: "${text}"`);
+        }
+
+        function showToast(msg, type = "success") {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').innerText = msg;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 2200);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
