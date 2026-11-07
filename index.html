@@ -302,28 +302,59 @@ async function sha256(text) {
 
 // LOAD & SAVE DATA (KẾT NỐI MÁY CHỦ)
 async function loadChannels() {
-    // Nếu chưa điền API, dùng dữ liệu máy (offline)
-    if (JSONBIN_ID.includes("ĐIỀN_BIN") || JSONBIN_KEY.includes("ĐIỀN_MASTER")) {
-        console.warn("Chưa cấu hình JSONBin, dùng dữ liệu Local.");
-        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [...defaultChannels];
-    }
-
     try {
         showToast('⏳ Đang tải dữ liệu từ máy chủ...');
         const response = await fetch(JSONBIN_URL + '/latest', {
             method: 'GET',
-            headers: { 'X-Master-Key': JSONBIN_KEY, 'X-Bin-Meta': 'false' }
+            headers: { 
+                'X-Master-Key': JSONBIN_KEY, 
+                'X-Bin-Meta': 'false' 
+            }
         });
-        if (!response.ok) throw new Error('Lỗi mạng');
+        
+        if (!response.ok) {
+            throw new Error(`Lỗi HTTP: ${response.status}`);
+        }
+        
         const data = await response.json();
-        showToast('✅ Đã tải dữ liệu');
+        showToast('✅ Đã tải dữ liệu thành công');
         return Array.isArray(data) ? data : [...defaultChannels];
+        
     } catch (error) {
-        console.error("Lỗi:", error);
+        console.error("❌ Lỗi tải dữ liệu từ JSONBin:", error);
         showToast('⚠️ Lỗi máy chủ, dùng dữ liệu tạm');
         return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [...defaultChannels];
     }
 }
+
+async function saveToLocalStorage() {
+    // 1. Lưu tạm vào máy (phòng khi mất mạng)
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(channels));
+    
+    // 2. Đẩy lên máy chủ JSONBin
+    try {
+        const response = await fetch(JSONBIN_URL, {
+            method: 'PUT',
+            headers: { 
+                'Content-Type': 'application/json', 
+                'X-Master-Key': JSONBIN_KEY 
+            },
+            body: JSON.stringify(channels)
+        });
+
+        if (!response.ok) {
+            throw new Error(`Lỗi HTTP: ${response.status}`);
+        }
+        
+        // Thành công thì báo xanh
+        console.log("✅ Đã đồng bộ lên JSONBin thành công!");
+        showToast('☁️ Đã đồng bộ lên máy chủ!');
+        
+    } catch (error) {
+        console.error("❌ Lỗi lưu lên JSONBin:", error);
+        showToast('⚠️ Không thể đồng bộ lên máy chủ. Đã lưu tạm.');
+    }
+                        }
 
 async function saveToLocalStorage() {
         // 1. Luôn lưu tạm vào máy
