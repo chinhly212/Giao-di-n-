@@ -2,7 +2,7 @@
   "name": "VibNest Enterprise", 
   "short_name": "VibNest", 
   "description": "Cổng kết nối doanh nghiệp, mạng xã hội chính thức", 
-  "version": "v1.0.0", 
+  "version": "v1.1.0", 
   "start_url": "/",
   "display": "standalone",
   "background_color": "#05070b",
