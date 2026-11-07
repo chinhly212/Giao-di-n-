@@ -82,6 +82,11 @@
         #secretLogoTrigger > * { pointer-events: none; }
         #secretLogoTrigger:active { transform: scale(0.97); }
     </style>
+        <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#e53935">
+</style> 
+    <link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#e53935">
 </head>
 <body class="min-h-screen flex flex-col justify-between relative pb-20">
 
@@ -654,6 +659,15 @@ function renderCurrentTab() {
             if (e.key === 'Enter') verifyAdminPin();
         });
     });
+    <script>
+        // Đăng ký Service Worker để chạy Offline
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(reg => console.log('✅ Service Worker đã đăng ký thành công!'))
+                    .catch(err => console.log('❌ Lỗi Service Worker:', err));
+            });
+        }
     </script>
 </body>
 </html>
