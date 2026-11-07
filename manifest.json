@@ -1,0 +1,25 @@
+{
+  "name": "VibNest Enterprise", 
+  "short_name": "VibNest", 
+  "description": "Cổng kết nối doanh nghiệp, mạng xã hội chính thức", 
+  "version": "v1.0.0", 
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#05070b",
+  "theme_color": "#e53935",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ]
+}
